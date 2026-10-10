@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/welcome_screen.dart';
+import 'screens/main_shell.dart';
 
 void main() {
   runApp(const CarWashApp());
@@ -158,7 +158,7 @@ class CarWashApp extends StatelessWidget {
           scrolledUnderElevation: 0,
         ),
       ),
-      home: const WelcomeScreen(),
+      home: const MainShell(),
     );
   }
 }
