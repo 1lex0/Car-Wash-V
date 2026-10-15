@@ -38,25 +38,18 @@ class WashLiveState {
   factory WashLiveState.fromJson(Map<String, dynamic> json) {
     final baysJson = json['bays'] as List<dynamic>? ?? [];
 
-    final parkingJson =
-        json['occupiedParkingSpots'] as List<dynamic>? ?? [];
+    final parkingJson = json['occupiedParkingSpots'] as List<dynamic>? ?? [];
 
     return WashLiveState(
       washId: json['washId'] as String,
       timestamp: DateTime.parse(json['timestamp'] as String),
 
-      waitingCarsCount:
-          (json['waitingCarsCount'] as int).clamp(0, 10),
+      waitingCarsCount: (json['waitingCarsCount'] as int).clamp(0, 10),
 
-      occupiedParkingSpots:
-          parkingJson.map((e) => e as int).toSet(),
+      occupiedParkingSpots: parkingJson.map((e) => e as int).toSet(),
 
       bays: baysJson
-          .map(
-            (e) => BayState.fromJson(
-              e as Map<String, dynamic>,
-            ),
-          )
+          .map((e) => BayState.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }

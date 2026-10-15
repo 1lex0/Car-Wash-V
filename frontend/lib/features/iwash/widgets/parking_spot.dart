@@ -34,18 +34,11 @@ class ParkingSpot extends StatelessWidget {
         decoration: BoxDecoration(
           color: palette.parkingBackground,
           borderRadius: BorderRadius.circular(11),
-          border: Border.all(
-            color: palette.parkingBorder,
-            width: 2,
-          ),
+          border: Border.all(color: palette.parkingBorder, width: 2),
         ),
         child: Center(
           child: occupied
-              ? MiniCar(
-                  color: carColor,
-                  scale: 0.55,
-                  palette: palette,
-                )
+              ? MiniCar(color: carColor, scale: 0.55, palette: palette)
               : Text(
                   'P',
                   style: TextStyle(

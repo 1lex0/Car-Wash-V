@@ -12,73 +12,19 @@ class IWashMap extends StatelessWidget {
   final IWashPalette palette;
   final WashLiveState state;
 
-  const IWashMap({
-    super.key,
-    required this.palette,
-    required this.state,
-  });
+  const IWashMap({super.key, required this.palette, required this.state});
 
   static const List<WaitingPosition> waitingPositions = [
-    WaitingPosition(
-      x: 0.45,
-      y: 0.34,
-      angle: -0.13,
-      color: Color(0xFFE98D8D),
-    ),
-    WaitingPosition(
-      x: 0.63,
-      y: 0.32,
-      angle: 0.20,
-      color: Color(0xFFF1B558),
-    ),
-    WaitingPosition(
-      x: 0.78,
-      y: 0.35,
-      angle: -0.31,
-      color: Color(0xFF70AED6),
-    ),
-    WaitingPosition(
-      x: 0.52,
-      y: 0.47,
-      angle: 0.34,
-      color: Color(0xFFD7D3CB),
-    ),
-    WaitingPosition(
-      x: 0.67,
-      y: 0.48,
-      angle: -0.22,
-      color: Color(0xFF89D69F),
-    ),
-    WaitingPosition(
-      x: 0.80,
-      y: 0.57,
-      angle: 0.13,
-      color: Color(0xFFBE91E7),
-    ),
-    WaitingPosition(
-      x: 0.42,
-      y: 0.61,
-      angle: -0.38,
-      color: Color(0xFFE889B7),
-    ),
-    WaitingPosition(
-      x: 0.61,
-      y: 0.64,
-      angle: 0.15,
-      color: Color(0xFFFFCB62),
-    ),
-    WaitingPosition(
-      x: 0.74,
-      y: 0.62,
-      angle: -0.12,
-      color: Color(0xFF79D3AA),
-    ),
-    WaitingPosition(
-      x: 0.54,
-      y: 0.56,
-      angle: 0.07,
-      color: Color(0xFF80B6DF),
-    ),
+    WaitingPosition(x: 0.45, y: 0.34, angle: -0.13, color: Color(0xFFE98D8D)),
+    WaitingPosition(x: 0.63, y: 0.32, angle: 0.20, color: Color(0xFFF1B558)),
+    WaitingPosition(x: 0.78, y: 0.35, angle: -0.31, color: Color(0xFF70AED6)),
+    WaitingPosition(x: 0.52, y: 0.47, angle: 0.34, color: Color(0xFFD7D3CB)),
+    WaitingPosition(x: 0.67, y: 0.48, angle: -0.22, color: Color(0xFF89D69F)),
+    WaitingPosition(x: 0.80, y: 0.57, angle: 0.13, color: Color(0xFFBE91E7)),
+    WaitingPosition(x: 0.42, y: 0.61, angle: -0.38, color: Color(0xFFE889B7)),
+    WaitingPosition(x: 0.61, y: 0.64, angle: 0.15, color: Color(0xFFFFCB62)),
+    WaitingPosition(x: 0.74, y: 0.62, angle: -0.12, color: Color(0xFF79D3AA)),
+    WaitingPosition(x: 0.54, y: 0.56, angle: 0.07, color: Color(0xFF80B6DF)),
   ];
 
   @override
@@ -88,8 +34,7 @@ class IWashMap extends StatelessWidget {
         final w = constraints.maxWidth;
         final h = constraints.maxHeight;
 
-        final waitingCount =
-            state.waitingCarsCount.clamp(
+        final waitingCount = state.waitingCarsCount.clamp(
           0,
           waitingPositions.length,
         );
@@ -101,14 +46,11 @@ class IWashMap extends StatelessWidget {
             children: [
               Positioned.fill(
                 child: CustomPaint(
-                  painter: IWashGroundPainter(
-                    palette: palette,
-                  ),
+                  painter: IWashGroundPainter(palette: palette),
                 ),
               ),
 
               // TOP 4 -> 1
-
               WashBay(
                 number: 4,
                 left: w * 0.32,
@@ -157,7 +99,6 @@ class IWashMap extends StatelessWidget {
               ),
 
               // LEFT 5 → 7
-
               WashBay(
                 number: 5,
                 left: w * 0.17,
@@ -195,7 +136,6 @@ class IWashMap extends StatelessWidget {
               ),
 
               // BOTTOM 8 → 11
-
               WashBay(
                 number: 8,
                 left: w * 0.43,
@@ -245,32 +185,25 @@ class IWashMap extends StatelessWidget {
               ),
 
               // PARKING
-
               for (int i = 0; i < 8; i++)
                 ParkingSpot(
                   left: w * 0.025,
                   top: h * (0.17 + i * 0.083),
                   width: w * 0.105,
                   height: h * 0.055,
-                  occupied:
-                      state.occupiedParkingSpots.contains(i),
+                  occupied: state.occupiedParkingSpots.contains(i),
                   carColor: _parkingCarColor(i),
                   palette: palette,
                 ),
 
               // WAITING AREA
               // Сколько пришло из state — столько и рисуем.
-
               for (int i = 0; i < waitingCount; i++)
                 WaitingCar(
-                  left:
-                      w * waitingPositions[i].x,
-                  top:
-                      h * waitingPositions[i].y,
-                  angle:
-                      waitingPositions[i].angle,
-                  color:
-                      waitingPositions[i].color,
+                  left: w * waitingPositions[i].x,
+                  top: h * waitingPositions[i].y,
+                  angle: waitingPositions[i].angle,
+                  color: waitingPositions[i].color,
                   palette: palette,
                 ),
             ],

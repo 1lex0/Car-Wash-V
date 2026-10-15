@@ -5,9 +5,7 @@ import '../theme/iwash_palette.dart';
 class IWashGroundPainter extends CustomPainter {
   final IWashPalette palette;
 
-  IWashGroundPainter({
-    required this.palette,
-  });
+  IWashGroundPainter({required this.palette});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -27,10 +25,7 @@ class IWashGroundPainter extends CustomPainter {
       ..strokeWidth = 2.5;
 
     final perimeter = Path()
-      ..moveTo(
-        size.width * 0.10,
-        size.height * 0.065,
-      )
+      ..moveTo(size.width * 0.10, size.height * 0.065)
       ..quadraticBezierTo(
         size.width * 0.52,
         size.height * 0.015,
@@ -50,10 +45,7 @@ class IWashGroundPainter extends CustomPainter {
         size.height * 0.74,
       );
 
-    canvas.drawPath(
-      perimeter,
-      road,
-    );
+    canvas.drawPath(perimeter, road);
 
     final waitingArea = RRect.fromRectAndRadius(
       Rect.fromLTRB(
@@ -65,51 +57,25 @@ class IWashGroundPainter extends CustomPainter {
       const Radius.circular(5),
     );
 
-    canvas.drawRRect(
-      waitingArea,
-      waitingAreaPaint,
-    );
+    canvas.drawRRect(waitingArea, waitingAreaPaint);
 
-    canvas.drawRRect(
-      waitingArea,
-      waitingBorderPaint,
-    );
+    canvas.drawRRect(waitingArea, waitingBorderPaint);
 
     final entryTop = Path()
-      ..moveTo(
-        size.width * 0.13,
-        size.height * 0.72,
-      )
-      ..lineTo(
-        size.width * 0.31,
-        size.height * 0.62,
-      );
+      ..moveTo(size.width * 0.13, size.height * 0.72)
+      ..lineTo(size.width * 0.31, size.height * 0.62);
 
     final entryBottom = Path()
-      ..moveTo(
-        size.width * 0.16,
-        size.height * 0.81,
-      )
-      ..lineTo(
-        size.width * 0.36,
-        size.height * 0.68,
-      );
+      ..moveTo(size.width * 0.16, size.height * 0.81)
+      ..lineTo(size.width * 0.36, size.height * 0.68);
 
-    canvas.drawPath(
-      entryTop,
-      road,
-    );
+    canvas.drawPath(entryTop, road);
 
-    canvas.drawPath(
-      entryBottom,
-      road,
-    );
+    canvas.drawPath(entryBottom, road);
   }
 
   @override
-  bool shouldRepaint(
-    covariant IWashGroundPainter oldDelegate,
-  ) {
+  bool shouldRepaint(covariant IWashGroundPainter oldDelegate) {
     return oldDelegate.palette != palette;
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../theme/iwash_palette.dart';
@@ -41,13 +42,10 @@ class WashBay extends StatelessWidget {
       height: height,
       child: Container(
         decoration: BoxDecoration(
-          color:
-              occupied ? palette.occupiedBay : palette.freeBay,
+          color: occupied ? palette.occupiedBay : palette.freeBay,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: occupied
-                ? palette.occupiedBorder
-                : palette.freeBorder,
+            color: occupied ? palette.occupiedBorder : palette.freeBorder,
             width: 2,
           ),
         ),
@@ -71,8 +69,7 @@ class WashBay extends StatelessWidget {
                   ? Transform.rotate(
                       angle: vertical ? math.pi / 2 : 0,
                       child: MiniCar(
-                        color: carColor ??
-                            const Color(0xFFD7D3CB),
+                        color: carColor ?? const Color(0xFFD7D3CB),
                         scale: vertical ? 0.70 : 0.82,
                         palette: palette,
                       ),

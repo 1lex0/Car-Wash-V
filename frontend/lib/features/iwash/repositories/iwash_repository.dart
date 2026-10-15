@@ -14,11 +14,7 @@ class IWashRepository {
       waitingCarsCount: 5,
 
       // Временно занятые парковочные места.
-      occupiedParkingSpots: const {
-        1,
-        4,
-        6,
-      },
+      occupiedParkingSpots: const {1, 4, 6},
 
       // Временное состояние боксов.
       // Потом эти значения придут из backend JSON.

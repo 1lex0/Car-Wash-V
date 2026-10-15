@@ -26,11 +26,7 @@ class WaitingCar extends StatelessWidget {
       top: top,
       child: Transform.rotate(
         angle: angle,
-        child: MiniCar(
-          color: color,
-          scale: 0.82,
-          palette: palette,
-        ),
+        child: MiniCar(color: color, scale: 0.82, palette: palette),
       ),
     );
   }

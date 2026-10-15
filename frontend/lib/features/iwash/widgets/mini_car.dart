@@ -23,10 +23,7 @@ class MiniCar extends StatelessWidget {
         width: 50,
         height: 30,
         child: CustomPaint(
-          painter: MiniCarPainter(
-            bodyColor: color,
-            darkColor: palette.carDark,
-          ),
+          painter: MiniCarPainter(bodyColor: color, darkColor: palette.carDark),
         ),
       ),
     );

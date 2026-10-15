@@ -3,11 +3,7 @@ class BayState {
   final bool occupied;
   final String? vehicleId;
 
-  const BayState({
-    required this.id,
-    required this.occupied,
-    this.vehicleId,
-  });
+  const BayState({required this.id, required this.occupied, this.vehicleId});
 
   factory BayState.fromJson(Map<String, dynamic> json) {
     return BayState(
