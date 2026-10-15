@@ -140,7 +140,7 @@ class SearchScreen extends StatelessWidget {
                             final state = repository.getCurrentState();
 
                             Navigator.push(
-                              context,
+                              context,ы
                               MaterialPageRoute(
                                 builder: (_) => IWashScreen(
                                   state: state,
