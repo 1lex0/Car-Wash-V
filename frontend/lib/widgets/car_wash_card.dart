@@ -1,72 +1,46 @@
 import 'package:flutter/material.dart';
 
+import '../models/car_wash.dart';
+
 class CarWashCard extends StatelessWidget {
-  final String name;
-  final String location;
-  final String logoPath;
+  final CarWash wash;
   final VoidCallback? onTap;
 
-  const CarWashCard({
-    super.key,
-    required this.name,
-    required this.location,
-    required this.logoPath,
-    this.onTap,
-  });
+  const CarWashCard({super.key, required this.wash, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: const Color(0xFFF7F4EE),
       borderRadius: BorderRadius.circular(24),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 16,
-          ),
-          child: Row(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0F0ED),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Image.asset(
-                  logoPath,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontSize: 19,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      location,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF777777),
-                          ),
-                    ),
-                  ],
+              Expanded(child: Image.asset(wash.logoAsset, fit: BoxFit.contain)),
+
+              const SizedBox(height: 14),
+
+              Text(
+                wash.name,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1F3A33),
                 ),
               ),
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 17,
-                color: Color(0xFF7A7A7A),
+
+              const SizedBox(height: 4),
+
+              Text(
+                '${wash.area}, ${wash.city}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF6F7D78)),
               ),
             ],
           ),
