@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'login_screen.dart';
 import 'signup_screen.dart';
 
@@ -13,19 +14,16 @@ class WelcomeScreen extends StatelessWidget {
         children: [
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 28,
-                vertical: 24,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Text(
                   'CAR WASH',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        letterSpacing: 2.2,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: Colors.white,
+                    letterSpacing: 2.2,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -48,9 +46,7 @@ class WelcomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(28, 44, 28, 38),
                 decoration: const BoxDecoration(
                   color: Color(0xFFF5F5F2),
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(36),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
                 ),
                 child: SafeArea(
                   top: false,
@@ -67,18 +63,15 @@ class WelcomeScreen extends StatelessWidget {
 
                       Text(
                         'Find a free bay. Skip the wait.',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: const Color(0xFF4E4E4E),
-                            ),
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(color: const Color(0xFF4E4E4E)),
                       ),
 
                       const SizedBox(height: 38),
 
                       Center(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: 500,
-                          ),
+                          constraints: const BoxConstraints(maxWidth: 500),
                           child: Column(
                             children: [
                               SizedBox(
@@ -88,8 +81,7 @@ class WelcomeScreen extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) =>
-                                            const SignUpScreen(),
+                                        builder: (_) => const SignUpScreen(),
                                       ),
                                     );
                                   },
@@ -106,8 +98,7 @@ class WelcomeScreen extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) =>
-                                            const LoginScreen(),
+                                        builder: (_) => const LoginScreen(),
                                       ),
                                     );
                                   },

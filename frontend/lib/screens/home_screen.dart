@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class HomeScreen extends StatelessWidget {
   final VoidCallback onSearchTap;
 
-  const HomeScreen({
-    super.key,
-    required this.onSearchTap,
-  });
+  const HomeScreen({super.key, required this.onSearchTap});
 
   String _greeting() {
     final hour = DateTime.now().hour;
@@ -34,9 +31,7 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 430,
-            ),
+            constraints: const BoxConstraints(maxWidth: 430),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 95),
               child: Column(
@@ -190,9 +185,7 @@ class HomeScreen extends StatelessWidget {
                               left: 0,
                               right: 0,
                               top: 48,
-                              child: Center(
-                                child: _CarSilhouette(),
-                              ),
+                              child: Center(child: _CarSilhouette()),
                             ),
 
                             const Positioned(
@@ -286,9 +279,7 @@ class _CarSilhouette extends StatelessWidget {
     return SizedBox(
       width: 215,
       height: 95,
-      child: CustomPaint(
-        painter: _CarPainter(),
-      ),
+      child: CustomPaint(painter: _CarPainter()),
     );
   }
 }
@@ -304,11 +295,9 @@ class _CarPainter extends CustomPainter {
       ..color = const Color(0xFF1F3A33)
       ..style = PaintingStyle.fill;
 
-    final tyrePaint = Paint()
-      ..color = const Color(0xFF10251F);
+    final tyrePaint = Paint()..color = const Color(0xFF10251F);
 
-    final wheelPaint = Paint()
-      ..color = const Color(0xFF8BA59C);
+    final wheelPaint = Paint()..color = const Color(0xFF8BA59C);
 
     final body = Path();
 
