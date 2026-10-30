@@ -1,4 +1,4 @@
-import '../models/car_wash.dart';
+import 'car_wash.dart';
 
 const List<CarWash> mockCarWashes = [
   CarWash(

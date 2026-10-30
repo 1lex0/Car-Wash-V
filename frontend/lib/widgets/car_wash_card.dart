@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../models/car_wash.dart';
+import '../data/car_wash.dart';
+import 'car_wash_logo.dart';
 
 class CarWashCard extends StatelessWidget {
   final CarWash wash;
@@ -21,7 +22,7 @@ class CarWashCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(child: Image.asset(wash.logoAsset, fit: BoxFit.contain)),
+              Expanded(child: CarWashLogo(asset: wash.logoAsset, iconSize: 64)),
 
               const SizedBox(height: 14),
 
