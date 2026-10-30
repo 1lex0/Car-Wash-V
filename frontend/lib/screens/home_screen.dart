@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../models/favorites_model.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback onSearchTap;
@@ -67,6 +71,25 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+
+                      Consumer<FavoritesModel>(
+                        builder: (context, favorites, child) => IconButton(
+                          tooltip: 'Favorites',
+                          onPressed: () => context.go('/search/favorites'),
+                          icon: Badge(
+                            isLabelVisible: favorites.count > 0,
+                            label: Text('${favorites.count}'),
+                            child: child!,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.favorite_border_rounded,
+                          color: darkText,
+                          size: 26,
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
 
                       // WEATHER CAPSULE
                       Container(
