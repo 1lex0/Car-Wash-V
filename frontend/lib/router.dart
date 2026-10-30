@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'features/iwash/iwash_screen.dart';
-import 'features/iwash/repositories/iwash_repository.dart';
 
 import 'screens/car_wash_detail_screen.dart';
+import 'screens/car_wash_form_screen.dart';
+import 'screens/favorites_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'features/profile/profile_screen.dart';
@@ -74,6 +75,16 @@ final GoRouter router = GoRouter(
 
               routes: [
                 GoRoute(
+                  path: 'favorites',
+                  builder: (context, state) => const FavoritesScreen(),
+                ),
+
+                GoRoute(
+                  path: 'new',
+                  builder: (context, state) => const CarWashFormScreen(),
+                ),
+
+                GoRoute(
                   path: ':id',
                   builder: (context, state) {
                     final idString = state.pathParameters['id'];
@@ -105,9 +116,7 @@ final GoRouter router = GoRouter(
                           );
                         }
 
-                        const repository = IWashRepository();
-
-                        return IWashScreen(state: repository.getCurrentState());
+                        return IWashScreen(washId: id!);
                       },
                     ),
                   ],
