@@ -134,6 +134,11 @@ public static class CarWashes
         if (Find(conn, Auth.CurrentUserId(context), id) is null)
             return Errors.NotFound("Car wash not found");
 
+        // сначала зависимая строка живой карты (REFERENCES carwashes)
+        using (var live = conn.Cmd("DELETE FROM wash_live WHERE wash_id = $id", ("$id", id)))
+        {
+            live.ExecuteNonQuery();
+        }
         using var delete = conn.Cmd("DELETE FROM carwashes WHERE id = $id", ("$id", id));
         delete.ExecuteNonQuery();
         return Results.NoContent();

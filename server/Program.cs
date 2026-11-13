@@ -47,6 +47,10 @@ carwashes.MapPost("", CarWashes.Create);
 carwashes.MapGet("/{id:long}", CarWashes.GetOne);
 carwashes.MapPut("/{id:long}", CarWashes.Update);
 carwashes.MapDelete("/{id:long}", CarWashes.Delete);
+// Живая карта мойки — вложенный ресурс, под тем же middleware.
+carwashes.MapGet("/{id:long}/live", LiveStates.Get);
+carwashes.MapPut("/{id:long}/live", LiveStates.Put);
+carwashes.MapDelete("/{id:long}/live", LiveStates.Delete);
 
 app.MapPost("/files", Files.Upload).AddEndpointFilter(Auth.RequireAuth);
 app.MapGet("/files/{id:long}", Files.Download); // public on purpose (images by URL)
