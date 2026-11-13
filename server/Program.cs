@@ -40,6 +40,14 @@ notes.MapGet("/{id:long}", Notes.GetOne);
 notes.MapPut("/{id:long}", Notes.Update);
 notes.MapDelete("/{id:long}", Notes.Delete);
 
+// 2D Wash: каталог моек — тот же auth-middleware, что и у /notes.
+var carwashes = app.MapGroup("/carwashes").AddEndpointFilter(Auth.RequireAuth);
+carwashes.MapGet("", CarWashes.List);
+carwashes.MapPost("", CarWashes.Create);
+carwashes.MapGet("/{id:long}", CarWashes.GetOne);
+carwashes.MapPut("/{id:long}", CarWashes.Update);
+carwashes.MapDelete("/{id:long}", CarWashes.Delete);
+
 app.MapPost("/files", Files.Upload).AddEndpointFilter(Auth.RequireAuth);
 app.MapGet("/files/{id:long}", Files.Download); // public on purpose (images by URL)
 

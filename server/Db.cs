@@ -34,6 +34,17 @@ public static class Db
               created_at TEXT    NOT NULL
             );
 
+            -- 2D Wash: автомойки пользователя (каталог), по образцу notes
+            CREATE TABLE IF NOT EXISTS carwashes (
+              id         INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id    INTEGER NOT NULL REFERENCES users (id),
+              name       TEXT    NOT NULL,
+              area       TEXT    NOT NULL,
+              city       TEXT    NOT NULL,
+              logo_asset TEXT,
+              created_at TEXT    NOT NULL
+            );
+
             CREATE TABLE IF NOT EXISTS files (
               id         INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id    INTEGER NOT NULL REFERENCES users (id),
