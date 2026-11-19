@@ -15,18 +15,15 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  String _query = '';
+  // L5: фильтр живёт в модели и уходит на сервер; здесь только контроллер.
+  late final _searchController = TextEditingController(
+    text: context.read<CarWashCatalogModel>().search,
+  );
 
-  List<CarWash> _filter(List<CarWash> washes) {
-    final q = _query.trim().toLowerCase();
-    if (q.isEmpty) return washes;
-    return washes
-        .where(
-          (w) =>
-              w.name.toLowerCase().contains(q) ||
-              w.area.toLowerCase().contains(q),
-        )
-        .toList();
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -42,7 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
         onRetry: () => context.read<CarWashCatalogModel>().load(),
       );
     } else {
-      body = _buildGrid(_filter(catalog.washes));
+      body = _buildGrid(catalog.washes, catalog.hasMore);
     }
 
     return Scaffold(
@@ -79,7 +76,11 @@ class _SearchScreenState extends State<SearchScreen> {
               const SizedBox(height: 20),
 
               TextField(
-                onChanged: (value) => setState(() => _query = value),
+                controller: _searchController,
+                textInputAction: TextInputAction.search,
+                // поиск НА СЕРВЕРЕ: read — мы в callback-е
+                onSubmitted: (q) =>
+                    context.read<CarWashCatalogModel>().load(search: q.trim()),
                 decoration: InputDecoration(
                   hintText: 'Search',
                   prefixIcon: const Icon(Icons.search),
@@ -102,13 +103,14 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildGrid(List<CarWash> washes) {
+  Widget _buildGrid(List<CarWash> washes, bool hasMore) {
     if (washes.isEmpty) {
       return const Center(child: Text('No car washes found'));
     }
 
     return GridView.builder(
-      itemCount: washes.length,
+      // +1 ячейка-хвост, пока сервер, видимо, отдаст ещё страницу
+      itemCount: washes.length + (hasMore ? 1 : 0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 14,
@@ -116,6 +118,11 @@ class _SearchScreenState extends State<SearchScreen> {
         childAspectRatio: 0.95,
       ),
       itemBuilder: (context, index) {
+        if (index == washes.length) {
+          // хвост виден → просим следующую страницу (guard — в модели)
+          context.read<CarWashCatalogModel>().loadMore();
+          return const Center(child: CircularProgressIndicator());
+        }
         final wash = washes[index];
 
         return CarWashCard(

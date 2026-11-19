@@ -13,23 +13,64 @@ class CarWashCatalogModel extends ChangeNotifier {
   String? _error;
   List<CarWash> _washes = const [];
 
+  // L5: поиск и ломти с сервера, поверх триады L4.
+  static const _limit = 20;
+  String _search = '';
+  int _page = 1;
+  bool _hasMore = false;
+  bool _loadingMore = false;
+
   bool get isLoading => _loading;
   String? get error => _error;
   List<CarWash> get washes => List.unmodifiable(_washes);
+  String get search => _search;
+  bool get hasMore => _hasMore;
 
-  Future<void> load() async {
+  // search: null — оставить прежний фильтр (retry его сохраняет).
+  Future<void> load({String? search}) async {
+    _search = search ?? _search;
+    _page = 1;
     _loading = true;
     _error = null;
     notifyListeners();
 
-    switch (await _repository.fetchAll()) {
+    switch (await _repository.fetchAll(limit: _limit, search: _search)) {
       case Ok(:final value):
         _washes = value;
+        _hasMore = value.length == _limit; // полная страница → видимо, есть ещё
       case Err(:final msg):
         _error = msg;
+        _hasMore = false;
     }
 
     _loading = false;
+    notifyListeners();
+  }
+
+  // Следующая страница приклеивается к хвосту. Зовётся из itemBuilder
+  // (в разгар build), поэтому в начале — БЕЗ notifyListeners().
+  Future<void> loadMore() async {
+    if (_loadingMore || _loading || !_hasMore) return; // guard: без дублей
+    _loadingMore = true;
+
+    final result = await _repository.fetchAll(
+      page: _page + 1,
+      limit: _limit,
+      search: _search,
+    );
+    switch (result) {
+      case Ok(:final value):
+        _page += 1;
+        // без дублей: запись, добавленная через add(), может прийти и в
+        // следующей странице сервера (offset-пагинация + локальная вставка)
+        final known = {for (final w in _washes) w.id};
+        _washes = [..._washes, ...value.where((w) => !known.contains(w.id))];
+        _hasMore = value.length == _limit;
+      case Err():
+        _hasMore = false; // хвост гаснет; pull/retry через load()
+    }
+
+    _loadingMore = false;
     notifyListeners();
   }
 
