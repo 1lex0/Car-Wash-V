@@ -1,0 +1,8 @@
+name: contract_check
+description: Собственный набор проверок контракта backend-а 2D Wash.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ^3.5.0
+# Зависимостей нет: только dart:io и dart:convert — запускается без pub get.
