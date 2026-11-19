@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:frontend/data/car_wash.dart';
-import 'package:frontend/data/mock_car_wash_repository.dart';
 import 'package:frontend/data/result.dart';
-import 'package:frontend/features/iwash/repositories/mock_iwash_repository.dart';
+
+import 'support/fake_repositories.dart';
+
 import 'package:frontend/models/car_wash_catalog_model.dart';
 import 'package:frontend/models/favorites_model.dart';
 import 'package:frontend/models/iwash_live_model.dart';
@@ -38,9 +39,9 @@ void main() {
     });
   });
 
-  group('MockCarWashRepository', () {
+  group('FakeCarWashRepository', () {
     test('fetchAll возвращает копию списка', () async {
-      final repo = MockCarWashRepository();
+      final repo = FakeCarWashRepository();
       final result = await repo.fetchAll();
 
       expect(result, isA<Ok<List<CarWash>>>());
@@ -54,25 +55,25 @@ void main() {
 
     test('есть задержка как у сети', () async {
       final watch = Stopwatch()..start();
-      await MockCarWashRepository().fetchAll();
+      await FakeCarWashRepository().fetchAll();
       expect(watch.elapsedMilliseconds, greaterThanOrEqualTo(750));
     });
 
     test('create дает id начиная с 1000', () async {
-      final repo = MockCarWashRepository();
+      final repo = FakeCarWashRepository();
       final created = await repo.create(_draft) as Ok<CarWash>;
       expect(created.value.id, 1000);
       expect(created.value.name, 'Aqua Wash');
     });
 
     test('несуществующий id возвращает Err', () async {
-      final repo = MockCarWashRepository();
+      final repo = FakeCarWashRepository();
       expect(await repo.fetchById(999), isA<Err<CarWash>>());
       expect(await repo.delete(999), isA<Err<void>>());
     });
 
     test('simulateError ломает все методы', () async {
-      final repo = MockCarWashRepository()..simulateError = true;
+      final repo = FakeCarWashRepository()..simulateError = true;
       final result = await repo.fetchAll();
       expect(result, isA<Err<List<CarWash>>>());
       expect((result as Err).msg, contains('Server is not responding'));
@@ -81,7 +82,7 @@ void main() {
 
   group('CarWashCatalogModel', () {
     test('load загружает данные', () async {
-      final model = CarWashCatalogModel(MockCarWashRepository());
+      final model = CarWashCatalogModel(FakeCarWashRepository());
       final states = <bool>[];
       model.addListener(() => states.add(model.isLoading));
 
@@ -96,7 +97,7 @@ void main() {
 
     test('load с ошибкой', () async {
       final model = CarWashCatalogModel(
-        MockCarWashRepository()..simulateError = true,
+        FakeCarWashRepository()..simulateError = true,
       );
       await model.load();
       expect(model.error, isNotNull);
@@ -104,7 +105,7 @@ void main() {
     });
 
     test('add и remove', () async {
-      final repo = MockCarWashRepository();
+      final repo = FakeCarWashRepository();
       final model = CarWashCatalogModel(repo);
       await model.load();
 
@@ -118,7 +119,7 @@ void main() {
     });
 
     test('add при ошибке не меняет список', () async {
-      final repo = MockCarWashRepository();
+      final repo = FakeCarWashRepository();
       final model = CarWashCatalogModel(repo);
       await model.load();
 
@@ -129,7 +130,7 @@ void main() {
     });
 
     test('update меняет мойку по id', () async {
-      final model = CarWashCatalogModel(MockCarWashRepository());
+      final model = CarWashCatalogModel(FakeCarWashRepository());
       await model.load();
 
       const renamed = CarWash(
@@ -143,7 +144,7 @@ void main() {
     });
 
     test('washes нельзя менять снаружи', () async {
-      final model = CarWashCatalogModel(MockCarWashRepository());
+      final model = CarWashCatalogModel(FakeCarWashRepository());
       await model.load();
       expect(() => model.washes.add(_draft), throwsUnsupportedError);
     });
@@ -151,7 +152,7 @@ void main() {
 
   group('IWashLiveModel', () {
     test('load(3) загружает боксы', () async {
-      final model = IWashLiveModel(MockIWashRepository());
+      final model = IWashLiveModel(FakeIWashRepository());
       await model.load(3);
       expect(model.state?.bays.length, 11);
       expect(model.state?.waitingCarsCount, 5);
@@ -159,7 +160,7 @@ void main() {
     });
 
     test('ошибка сервера', () async {
-      final model = IWashLiveModel(MockIWashRepository()..simulateError = true);
+      final model = IWashLiveModel(FakeIWashRepository()..simulateError = true);
       await model.load(3);
       expect(model.error, isNotNull);
     });

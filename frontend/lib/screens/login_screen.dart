@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../data/auth_api.dart';
+import '../data/result.dart';
+import '../models/car_wash_catalog_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,26 +18,50 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController(); // нужно только для register
 
   bool _hidePassword = true;
+  bool _isRegister = false; // переключатель login ↔ register
+  bool _busy = false; // запрос летит → кнопка погашена (против двойного submit)
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
 
     super.dispose();
   }
 
-  void _login() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  // L5: валидный submit идёт на сервер; валидация L3 — без изменений.
+  Future<void> _submit() async {
+    if (_busy) return;
+    if (!_formKey.currentState!.validate()) return; // валидация L3
 
-    // L3:
-    // Реальной авторизации пока нет.
-    // Любые корректные данные считаются успешными.
-    context.go('/home');
+    final auth = context.read<AuthApi>(); // read: мы в callback-е
+    setState(() => _busy = true);
+    final result = _isRegister
+        ? await auth.register(
+            _emailController.text.trim(),
+            _passwordController.text,
+            _nameController.text.trim(),
+          )
+        : await auth.login(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
+    if (!mounted) return; // C8: экран мог умереть, пока запрос летел
+    setState(() => _busy = false);
+
+    switch (result) {
+      case Ok():
+        // новый пользователь → свежий список с сервера (старый мог быть чужим)
+        context.read<CarWashCatalogModel>().load();
+        context.go('/home'); // token сохранён — входим в приложение
+      case Err(:final msg):
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(msg))); // уже по-русски
+    }
   }
 
   @override
@@ -55,10 +84,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
 
                   children: [
-                    const Text(
-                      'Welcome back',
+                    Text(
+                      _isRegister ? 'Create account' : 'Welcome back',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1F3A33),
@@ -67,13 +96,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 8),
 
-                    const Text(
-                      'Log in to continue',
+                    Text(
+                      _isRegister
+                          ? 'Sign up to continue'
+                          : 'Log in to continue',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15, color: Color(0xFF6F7D78)),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFF6F7D78),
+                      ),
                     ),
 
                     const SizedBox(height: 36),
+
+                    // Имя — только в режиме register (сервер без него отвечает 400)
+                    if (_isRegister) ...[
+                      TextFormField(
+                        controller: _nameController,
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          labelText: 'Name',
+                          filled: true,
+                          fillColor: const Color(0xFFF7F4EE),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          final name = value?.trim() ?? '';
+                          if (name.isEmpty) return 'Name is required';
+                          if (name.length < 2) return 'Minimum 2 characters';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
 
                     TextFormField(
                       controller: _emailController,
@@ -118,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.done,
 
                       onFieldSubmitted: (_) {
-                        _login();
+                        _submit();
                       },
 
                       decoration: InputDecoration(
@@ -162,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
 
                     FilledButton(
-                      onPressed: _login,
+                      onPressed: _busy ? null : _submit,
 
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF1F3A33),
@@ -170,16 +228,30 @@ class _LoginScreenState extends State<LoginScreen> {
                         minimumSize: const Size.fromHeight(56),
                       ),
 
-                      child: const Text('Log in'),
+                      child: _busy
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(_isRegister ? 'Sign up' : 'Log in'),
                     ),
 
                     const SizedBox(height: 14),
 
                     TextButton(
-                      onPressed: () {
-                        context.push('/signup');
-                      },
-                      child: const Text('Create an account'),
+                      // эфемерное состояние экрана → setState
+                      onPressed: _busy
+                          ? null
+                          : () => setState(() => _isRegister = !_isRegister),
+                      child: Text(
+                        _isRegister
+                            ? 'I already have an account'
+                            : 'Create an account',
+                      ),
                     ),
                   ],
                 ),

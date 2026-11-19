@@ -15,127 +15,128 @@ import 'screens/welcome_screen.dart';
 
 import 'widgets/app_shell.dart';
 
-final GoRouter router = GoRouter(
-  initialLocation: '/login',
+// L5: router строит main() — initialLocation зависит от token-а (C9),
+// поэтому здесь только объявление; иначе assignment_to_final.
+late final GoRouter router;
 
-  errorBuilder: (context, state) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          'Page not found\n${state.uri}',
-          textAlign: TextAlign.center,
-        ),
+// Экран «нет такого адреса» — из L3, без изменений.
+Widget routeErrorBuilder(BuildContext context, GoRouterState state) {
+  return Scaffold(
+    body: Center(
+      child: Text('Page not found\n${state.uri}', textAlign: TextAlign.center),
+    ),
+  );
+}
+
+// Маршруты L3 — без изменений, только вынесены в список для main().
+final List<RouteBase> appRoutes = [
+  // --------------------------------------------------
+  // AUTH / SCREENS WITHOUT BOTTOM NAVIGATION
+  // --------------------------------------------------
+
+  GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+
+  GoRoute(path: '/signup', builder: (context, state) => const SignUpScreen()),
+
+  GoRoute(path: '/welcome', builder: (context, state) => const WelcomeScreen()),
+
+  // --------------------------------------------------
+  // MAIN APPLICATION
+  // --------------------------------------------------
+  StatefulShellRoute.indexedStack(
+    builder: (context, state, navigationShell) {
+      return AppShell(navigationShell: navigationShell);
+    },
+
+    branches: [
+      //--------------------------------------------------
+      // HOME
+      //--------------------------------------------------
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/home',
+            builder: (context, state) => HomeScreen(
+              onSearchTap: () {
+                context.go('/search');
+              },
+            ),
+          ),
+        ],
       ),
-    );
-  },
+      //--------------------------------------------------
+      // SEARCH
+      //--------------------------------------------------
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/search',
+            builder: (context, state) => const SearchScreen(),
 
-  routes: [
-    // --------------------------------------------------
-    // AUTH / SCREENS WITHOUT BOTTOM NAVIGATION
-    // --------------------------------------------------
-
-    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-
-    GoRoute(path: '/signup', builder: (context, state) => const SignUpScreen()),
-
-    GoRoute(
-      path: '/welcome',
-      builder: (context, state) => const WelcomeScreen(),
-    ),
-
-    // --------------------------------------------------
-    // MAIN APPLICATION
-    // --------------------------------------------------
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) {
-        return AppShell(navigationShell: navigationShell);
-      },
-
-      branches: [
-        // HOME
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/home',
-              builder: (context, state) => HomeScreen(
-                onSearchTap: () {
-                  context.go('/search');
-                },
+            routes: [
+              GoRoute(
+                path: 'favorites',
+                builder: (context, state) => const FavoritesScreen(),
               ),
-            ),
-          ],
-        ),
 
-        // SEARCH
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/search',
-              builder: (context, state) => const SearchScreen(),
+              GoRoute(
+                path: 'new',
+                builder: (context, state) => const CarWashFormScreen(),
+              ),
 
-              routes: [
-                GoRoute(
-                  path: 'favorites',
-                  builder: (context, state) => const FavoritesScreen(),
-                ),
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final idString = state.pathParameters['id'];
 
-                GoRoute(
-                  path: 'new',
-                  builder: (context, state) => const CarWashFormScreen(),
-                ),
+                  final id = int.tryParse(idString ?? '');
 
-                GoRoute(
-                  path: ':id',
-                  builder: (context, state) {
-                    final idString = state.pathParameters['id'];
+                  if (id == null) {
+                    return const Scaffold(
+                      body: Center(child: Text('Invalid car wash id')),
+                    );
+                  }
 
-                    final id = int.tryParse(idString ?? '');
+                  return CarWashDetailScreen(id: id);
+                },
 
-                    if (id == null) {
-                      return const Scaffold(
-                        body: Center(child: Text('Invalid car wash id')),
-                      );
-                    }
+                routes: [
+                  GoRoute(
+                    path: 'map',
+                    builder: (context, state) {
+                      final idString = state.pathParameters['id'];
 
-                    return CarWashDetailScreen(id: id);
-                  },
+                      final id = int.tryParse(idString ?? '');
 
-                  routes: [
-                    GoRoute(
-                      path: 'map',
-                      builder: (context, state) {
-                        final idString = state.pathParameters['id'];
+                      if (id != 3) {
+                        return const Scaffold(
+                          body: Center(
+                            child: Text('Map is not available for this wash'),
+                          ),
+                        );
+                      }
 
-                        final id = int.tryParse(idString ?? '');
+                      return IWashScreen(washId: id!);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
 
-                        if (id != 3) {
-                          return const Scaffold(
-                            body: Center(
-                              child: Text('Map is not available for this wash'),
-                            ),
-                          );
-                        }
-
-                        return IWashScreen(washId: id!);
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        // PROFILE
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/profile',
-              builder: (context, state) => const ProfileScreen(),
-            ),
-          ],
-        ),
-      ],
-    ),
-  ],
-);
+      // --------------------------------------------------
+      // PROFILE
+      // --------------------------------------------------
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+        ],
+      ),
+    ],
+  ),
+];

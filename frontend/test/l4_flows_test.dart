@@ -17,6 +17,7 @@ Future<void> _open(WidgetTester tester, String location) async {
 }
 
 void main() {
+  setUpAll(ensureTestRouter); // router — late final с L5
   testWidgets('каталог показывает загрузку', (tester) async {
     usePhoneScreen(tester);
     router.go('/search');
@@ -194,19 +195,16 @@ void main() {
     expect(find.byType(ErrorView), findsNothing);
   });
 
-  testWidgets('переключатель в профиле включает ошибку', (tester) async {
+  testWidgets('L5: в профиле больше нет переключателя аварии', (tester) async {
     usePhoneScreen(tester);
-    final app = AppHarness();
     router.go('/profile');
-    await tester.pumpWidget(app.build());
+    await tester.pumpWidget(AppHarness().build());
     await tester.pump(_transition);
 
-    final toggle = find.byType(SwitchListTile);
-    await tester.scrollUntilVisible(toggle, 200);
-    await tester.tap(toggle);
-    await tester.pump();
-
-    expect(app.carWashRepository.simulateError, isTrue);
-    expect(app.iWashRepository.simulateError, isTrue);
+    expect(find.text('Log out'), findsOneWidget);
+    expect(
+      find.byType(SwitchListTile),
+      findsNothing,
+    ); // ошибку даёт остановка сервера
   });
 }

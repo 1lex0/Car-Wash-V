@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../data/mock_car_wash_repository.dart';
-import '../iwash/repositories/mock_iwash_repository.dart';
+import '../../data/auth_api.dart';
 import 'logout_dialog.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/settings_card.dart';
@@ -17,20 +16,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late bool _simulateError;
-
-  @override
-  void initState() {
-    super.initState();
-    _simulateError = context.read<MockCarWashRepository>().simulateError;
-  }
-
-  void _setSimulateError(bool value) {
-    setState(() => _simulateError = value);
-    context.read<MockCarWashRepository>().simulateError = value;
-    context.read<MockIWashRepository>().simulateError = value;
-  }
-
   Future<void> _logout(BuildContext context) async {
     final confirmed = await showLogoutDialog(context);
 
@@ -42,6 +27,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
+    await context.read<AuthApi>().logout(); // token стёрт из prefs (C9)
+    if (!context.mounted) return;
     context.go('/login');
   }
 
@@ -161,36 +148,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SettingsRow(
                         icon: Icons.location_on_outlined,
                         title: 'Location',
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  const SectionTitle('Developer'),
-
-                  const SizedBox(height: 10),
-
-                  SettingsCard(
-                    children: [
-                      Material(
-                        type: MaterialType.transparency,
-                        child: SwitchListTile(
-                          secondary: const Icon(
-                            Icons.wifi_off_rounded,
-                            color: darkGreen,
-                          ),
-                          title: const Text(
-                            'Simulate network failure',
-                            style: TextStyle(
-                              color: darkGreen,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          value: _simulateError,
-                          onChanged: _setSimulateError,
-                        ),
                       ),
                     ],
                   ),
