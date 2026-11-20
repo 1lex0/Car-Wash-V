@@ -1,11 +1,9 @@
-// L5: CarWashCatalogModel — ломти, guard loadMore() и поиск, без сети.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/data/car_wash.dart';
 import 'package:frontend/data/car_wash_repository.dart';
 import 'package:frontend/data/result.dart';
 import 'package:frontend/models/car_wash_catalog_model.dart';
 
-// 45 моек «на сервере»; запоминает, какие страницы у него просили.
 class _PagedRepo implements CarWashRepository {
   final all = [
     for (var i = 1; i <= 45; i++)
@@ -34,7 +32,7 @@ class _PagedRepo implements CarWashRepository {
   Future<Result<CarWash>> fetchById(int id) => throw UnimplementedError();
   @override
   Future<Result<CarWash>> create(CarWash wash) async {
-    final created = wash.copyWith(id: all.length + 1); // id даёт «сервер»
+    final created = wash.copyWith(id: all.length + 1);
     all.add(created);
     return Ok(created);
   }
@@ -57,7 +55,7 @@ void main() {
 
     await model.loadMore();
     expect(model.washes.length, 45);
-    expect(model.hasMore, isFalse); // неполная страница → больше нет
+    expect(model.hasMore, isFalse);
   });
 
   test(
@@ -68,7 +66,7 @@ void main() {
       await model.load();
 
       await Future.wait([model.loadMore(), model.loadMore()]);
-      expect(repo.asked, ['1:', '2:']); // без дублей
+      expect(repo.asked, ['1:', '2:']);
       expect(model.washes.map((w) => w.id).toSet().length, 40);
     },
   );
@@ -80,9 +78,9 @@ void main() {
     model.addListener(() => notified++);
 
     final pending = model.loadMore();
-    expect(notified, 0); // синхронно — ни одного notifyListeners()
+    expect(notified, 0);
     await pending;
-    expect(notified, 1); // один раз, когда страница приклеилась
+    expect(notified, 1);
   });
 
   test(
@@ -93,7 +91,7 @@ void main() {
       await model.load(search: 'Ботан');
       expect(model.washes.single.id, 7);
 
-      await model.load(); // как кнопка Retry
+      await model.load();
       expect(repo.asked.last, '1:Ботан');
       expect(model.search, 'Ботан');
     },
@@ -104,12 +102,12 @@ void main() {
     () async {
       final repo = _PagedRepo();
       final model = CarWashCatalogModel(repo);
-      await model.load(); // 20 из 45
+      await model.load();
       await model.add(
         const CarWash(id: 0, name: 'Sun Wash', area: 'A', city: 'C'),
       );
       await model.loadMore();
-      await model.loadMore(); // страница 3 содержит id 46 — уже добавленную
+      await model.loadMore();
       final ids = model.washes.map((w) => w.id).toList();
       expect(ids.length, ids.toSet().length);
       expect(ids.where((id) => id == 46).length, 1);

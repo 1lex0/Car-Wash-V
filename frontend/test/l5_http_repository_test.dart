@@ -1,5 +1,3 @@
-// L5: HttpCarWashRepository без сервера — http.runWithClient подменяет
-// сеть на MockClient, поэтому проверяется каждая ветка отказа.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -26,7 +24,6 @@ String _error(String code) => jsonEncode({
   'error': {'code': code, 'message': 'english text'},
 });
 
-// Запускает body, а все http.get/post/... внутри уходят в handler.
 Future<T> _with<T>(
   Future<http.Response> Function(http.Request) handler,
   Future<T> Function() body,

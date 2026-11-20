@@ -1,5 +1,5 @@
-// Тестовые двойники: бывшие mock-и L4 переехали из lib/ в test/ (L5).
-// В приложении их больше нет; тест сам собирает свой корень композиции.
+import 'package:frontend/data/account_repository.dart';
+import 'package:frontend/data/app_user.dart';
 import 'package:frontend/data/car_wash.dart';
 import 'package:frontend/data/car_wash_repository.dart';
 import 'package:frontend/data/result.dart';
@@ -135,5 +135,33 @@ class FakeIWashRepository implements IWashRepository {
         ],
       ),
     );
+  }
+}
+
+class FakeAccountRepository implements AccountRepository {
+  AppUser user = const AppUser(id: 1, email: 'alex@test.md', name: 'Alex');
+  String password = 'parola123';
+
+  @override
+  Future<Result<AppUser>> fetchMe() async => Ok(user);
+
+  @override
+  Future<Result<AppUser>> updateMe({String? name, String? email}) async {
+    if (email == 'taken@test.md') {
+      return const Err('Аккаунт с этим email уже существует');
+    }
+    user = AppUser(
+      id: user.id,
+      email: email ?? user.email,
+      name: name ?? user.name,
+    );
+    return Ok(user);
+  }
+
+  @override
+  Future<Result<void>> changePassword(String current, String next) async {
+    if (current != password) return const Err('Неверный текущий пароль');
+    password = next;
+    return const Ok(null);
   }
 }

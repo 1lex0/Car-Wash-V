@@ -17,7 +17,7 @@ Future<void> _open(WidgetTester tester, String location) async {
 }
 
 void main() {
-  setUpAll(ensureTestRouter); // router — late final с L5
+  setUpAll(ensureTestRouter);
   testWidgets('каталог показывает загрузку', (tester) async {
     usePhoneScreen(tester);
     router.go('/search');
@@ -201,10 +201,8 @@ void main() {
     await tester.pumpWidget(AppHarness().build());
     await tester.pump(_transition);
 
+    await tester.scrollUntilVisible(find.text('Log out'), 300);
     expect(find.text('Log out'), findsOneWidget);
-    expect(
-      find.byType(SwitchListTile),
-      findsNothing,
-    ); // ошибку даёт остановка сервера
+    expect(find.byType(SwitchListTile), findsNothing);
   });
 }

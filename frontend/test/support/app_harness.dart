@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_repositories.dart';
 
@@ -9,16 +10,20 @@ import 'package:frontend/main.dart';
 import 'package:frontend/models/car_wash_catalog_model.dart';
 import 'package:frontend/models/favorites_model.dart';
 import 'package:frontend/models/iwash_live_model.dart';
+import 'package:frontend/models/profile_model.dart';
+import 'package:frontend/models/settings_model.dart';
 import 'package:frontend/router.dart';
 
 class AppHarness {
   final carWashRepository = FakeCarWashRepository();
   final iWashRepository = FakeIWashRepository();
+  final accountRepository = FakeAccountRepository();
 
   static const latency = Duration(milliseconds: 900);
 
   Widget build() {
     ensureTestRouter();
+    SharedPreferences.setMockInitialValues({});
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -26,6 +31,10 @@ class AppHarness {
         ),
         ChangeNotifierProvider(create: (_) => FavoritesModel()),
         ChangeNotifierProvider(create: (_) => IWashLiveModel(iWashRepository)),
+        ChangeNotifierProvider(
+          create: (_) => ProfileModel(accountRepository)..load(),
+        ),
+        ChangeNotifierProvider(create: (_) => SettingsModel()..load()),
       ],
       child: const CarWashApp(),
     );
@@ -37,8 +46,6 @@ class AppHarness {
   }
 }
 
-// router — late final (L5): в тестах присваиваем один раз на isolate,
-// стартуя с login, как приложение без token-а.
 bool _routerReady = false;
 void ensureTestRouter() {
   if (_routerReady) return;
