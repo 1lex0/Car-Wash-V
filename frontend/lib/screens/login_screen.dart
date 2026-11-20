@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../data/auth_api.dart';
 import '../data/result.dart';
 import '../models/car_wash_catalog_model.dart';
+import '../models/profile_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,11 +19,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _nameController = TextEditingController(); // нужно только для register
+  final _nameController = TextEditingController();
 
   bool _hidePassword = true;
-  bool _isRegister = false; // переключатель login ↔ register
-  bool _busy = false; // запрос летит → кнопка погашена (против двойного submit)
+  bool _isRegister = false;
+  bool _busy = false;
 
   @override
   void dispose() {
@@ -33,12 +34,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // L5: валидный submit идёт на сервер; валидация L3 — без изменений.
   Future<void> _submit() async {
     if (_busy) return;
-    if (!_formKey.currentState!.validate()) return; // валидация L3
+    if (!_formKey.currentState!.validate()) return;
 
-    final auth = context.read<AuthApi>(); // read: мы в callback-е
+    final auth = context.read<AuthApi>();
     setState(() => _busy = true);
     final result = _isRegister
         ? await auth.register(
@@ -50,17 +50,17 @@ class _LoginScreenState extends State<LoginScreen> {
             _emailController.text.trim(),
             _passwordController.text,
           );
-    if (!mounted) return; // C8: экран мог умереть, пока запрос летел
+    if (!mounted) return;
     setState(() => _busy = false);
 
     switch (result) {
       case Ok():
-        // новый пользователь → свежий список с сервера (старый мог быть чужим)
         context.read<CarWashCatalogModel>().load();
-        context.go('/home'); // token сохранён — входим в приложение
+        context.read<ProfileModel>().load();
+        context.go('/home');
       case Err(:final msg):
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg))); // уже по-русски
+            .showSnackBar(SnackBar(content: Text(msg)));
     }
   }
 
@@ -109,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 36),
 
-                    // Имя — только в режиме register (сервер без него отвечает 400)
                     if (_isRegister) ...[
                       TextFormField(
                         controller: _nameController,
@@ -243,7 +242,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 14),
 
                     TextButton(
-                      // эфемерное состояние экрана → setState
                       onPressed: _busy
                           ? null
                           : () => setState(() => _isRegister = !_isRegister),

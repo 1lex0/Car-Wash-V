@@ -3,36 +3,34 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'data/auth_api.dart';
+import 'data/http_account_repository.dart';
 import 'data/http_car_wash_repository.dart';
 import 'data/token_store.dart';
 import 'features/iwash/repositories/http_iwash_repository.dart';
 import 'models/car_wash_catalog_model.dart';
 import 'models/favorites_model.dart';
 import 'models/iwash_live_model.dart';
+import 'models/profile_model.dart';
+import 'models/settings_model.dart';
 import 'router.dart';
 
-// Сервер на ноутбуке: эмулятор Android видит его как 10.0.2.2
-// (десктоп — localhost, телефон — IP ноутбука). Переопределение:
-// flutter run --dart-define=API_BASE=http://192.168.0.10:8080
 const apiBase = String.fromEnvironment(
   'API_BASE',
   defaultValue: 'http://10.0.2.2:8080',
 );
 
-// Корень композиции: здесь решается, откуда приходят данные.
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // prefs до runApp (C9)
+  WidgetsFlutterBinding.ensureInitialized();
   final tokens = TokenStore();
-  final loggedIn = await tokens.read() != null; // запуск решает по token-у
+  final loggedIn = await tokens.read() != null;
 
   router = GoRouter(
     initialLocation: loggedIn ? '/home' : '/login',
     errorBuilder: routeErrorBuilder,
-    routes: appRoutes, // маршруты L3, без изменений
+    routes: appRoutes,
   );
 
-  // L5: mock → http. ЕДИНСТВЕННОЕ место, где сменился источник данных.
-  void toLogin() => router.go('/login'); // 401 → login, в одном месте
+  void toLogin() => router.go('/login');
   final carWashRepository = HttpCarWashRepository(
     apiBase,
     tokens,
@@ -43,18 +41,26 @@ Future<void> main() async {
     tokens,
     onUnauthorized: toLogin,
   );
+  final accountRepository = HttpAccountRepository(
+    apiBase,
+    tokens,
+    onUnauthorized: toLogin,
+  );
 
   runApp(
     MultiProvider(
       providers: [
         Provider<AuthApi>(create: (_) => AuthApi(apiBase, tokens)),
 
-        // DI — как на L4: модели получают интерфейс и не знают, что он http.
         ChangeNotifierProvider(
           create: (_) => CarWashCatalogModel(carWashRepository)..load(),
         ),
         ChangeNotifierProvider(create: (_) => FavoritesModel()),
         ChangeNotifierProvider(create: (_) => IWashLiveModel(iWashRepository)),
+        ChangeNotifierProvider(
+          create: (_) => ProfileModel(accountRepository)..load(),
+        ),
+        ChangeNotifierProvider(create: (_) => SettingsModel()..load()),
       ],
       child: const CarWashApp(),
     ),
@@ -83,6 +89,15 @@ class CarWashApp extends StatelessWidget {
       ),
 
       routerConfig: router,
+
+      builder: (context, child) {
+        final scale = context.watch<SettingsModel>().textScale;
+        return MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(scale)),
+          child: child!,
+        );
+      },
     );
   }
 }

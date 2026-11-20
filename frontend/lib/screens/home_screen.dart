@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../models/favorites_model.dart';
+import '../models/profile_model.dart';
+import '../models/settings_model.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback onSearchTap;
@@ -28,6 +30,8 @@ class HomeScreen extends StatelessWidget {
     const lightCard = Color(0xFFF7F4EE);
     const darkText = Color(0xFF18372F);
     const secondaryText = Color(0xFF6F7D78);
+    final userName = context.watch<ProfileModel>().user?.name ?? '';
+    final settings = context.watch<SettingsModel>();
     const accentGreen = Color(0xFF3B886E);
 
     return Scaffold(
@@ -58,9 +62,9 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 1),
-                            const Text(
-                              'Alex',
-                              style: TextStyle(
+                            Text(
+                              userName,
+                              style: const TextStyle(
                                 color: darkText,
                                 fontSize: 30,
                                 height: 1,
@@ -211,12 +215,12 @@ class HomeScreen extends StatelessWidget {
                               child: Center(child: _CarSilhouette()),
                             ),
 
-                            const Positioned(
+                            Positioned(
                               left: 18,
                               bottom: 34,
                               child: Text(
-                                'Toyota Corolla',
-                                style: TextStyle(
+                                settings.vehicleModel,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -225,12 +229,12 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ),
 
-                            const Positioned(
+                            Positioned(
                               left: 18,
                               bottom: 16,
                               child: Text(
-                                'A B C  1 2 3',
-                                style: TextStyle(
+                                settings.vehiclePlate.toUpperCase(),
+                                style: const TextStyle(
                                   color: Color(0xFFA2AEA9),
                                   fontSize: 13,
                                   letterSpacing: 2,

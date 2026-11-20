@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../profile_palette.dart';
+
 class SettingsCard extends StatelessWidget {
   final List<Widget> children;
 
@@ -7,12 +9,10 @@ class SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F4EE),
-        borderRadius: BorderRadius.circular(24),
-      ),
+    return Material(
+      color: ProfilePalette.of(context).card,
+      borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
       child: Column(children: children),
     );
   }
@@ -27,8 +27,8 @@ class SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: const TextStyle(
-        color: Color(0xFF1F3A33),
+      style: TextStyle(
+        color: ProfilePalette.of(context).text,
         fontSize: 15,
         fontWeight: FontWeight.w600,
       ),
