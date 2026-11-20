@@ -34,7 +34,6 @@ public static class Db
               created_at TEXT    NOT NULL
             );
 
-            -- 2D Wash: автомойки пользователя (каталог), по образцу notes
             CREATE TABLE IF NOT EXISTS carwashes (
               id         INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id    INTEGER NOT NULL REFERENCES users (id),
@@ -45,8 +44,6 @@ public static class Db
               created_at TEXT    NOT NULL
             );
 
-            -- 2D Wash: живое состояние мойки (боксы, очередь, парковка), 1:1 с carwashes.
-            -- user_id не нужен: владелец определяется через carwashes.user_id.
             CREATE TABLE IF NOT EXISTS wash_live (
               wash_id          INTEGER PRIMARY KEY REFERENCES carwashes (id),
               waiting_cars     INTEGER NOT NULL,

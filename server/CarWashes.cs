@@ -1,16 +1,7 @@
-// CarWashes: сущность темы 2D Wash — копия Notes.cs с другими существительными.
-//
-// GET    /carwashes?page=&limit=&search=  -> 200 {items, page, limit, total}
-// POST   /carwashes                       -> 201 | 400
-// GET    /carwashes/{id}                  -> 200 | 404
-// PUT    /carwashes/{id}                  -> 200 | 400 | 404
-// DELETE /carwashes/{id}                  -> 204 | 404
-
 using Microsoft.Data.Sqlite;
 
 namespace PamBackend;
 
-// JSON: {id, name, area, city, logoAsset, createdAt} (camelCase делает Results.Json)
 public record CarWash(long Id, string Name, string Area, string City, string? LogoAsset, string CreatedAt);
 public record CarWashInput(string? Name, string? Area, string? City, string? LogoAsset);
 
@@ -22,18 +13,22 @@ public static class CarWashes
         r.GetInt64(0), r.GetString(1), r.GetString(2), r.GetString(3),
         r.IsDBNull(4) ? null : r.GetString(4), r.GetString(5));
 
-    /// <summary>Ищет мойку только среди моек текущего пользователя:
-    /// чужая выглядит так же, как несуществующая (404, не 403).</summary>
-    public static CarWash? Find(SqliteConnection conn, long userId, long id)
+    public static CarWash? Find(SqliteConnection conn, long id)
     {
-        using var cmd = conn.Cmd(
-            $"SELECT {Columns} FROM carwashes WHERE id = $id AND user_id = $userId",
-            ("$id", id), ("$userId", userId));
+        using var cmd = conn.Cmd($"SELECT {Columns} FROM carwashes WHERE id = $id", ("$id", id));
         using var reader = cmd.ExecuteReader();
         return reader.Read() ? Read(reader) : null;
     }
 
-    /// <summary>Общая валидация create/update: name, area, city обязательны.</summary>
+    public static IResult? CheckOwner(SqliteConnection conn, long userId, long id)
+    {
+        using var cmd = conn.Cmd("SELECT user_id FROM carwashes WHERE id = $id", ("$id", id));
+        var owner = cmd.ExecuteScalar();
+        if (owner is null) return Errors.NotFound("Car wash not found");
+        if ((long)owner != userId) return Errors.Forbidden("Only the owner can change this car wash");
+        return null;
+    }
+
     private static (CarWashInput? Clean, IResult? Error) Validate(CarWashInput input)
     {
         var name = Errors.Trimmed(input.Name);
@@ -45,7 +40,6 @@ public static class CarWashes
         return (new CarWashInput(name, area, city, Errors.Trimmed(input.LogoAsset)), null);
     }
 
-    /// <summary>GET /carwashes — пагинация и поиск по name/area/city, как в notes.</summary>
     public static IResult List(HttpContext context,
         int page = 1, int limit = 20, string search = "")
     {
@@ -53,24 +47,22 @@ public static class CarWashes
         limit = Math.Clamp(limit, 1, 100);
 
         const string where =
-            "user_id = $userId AND (name LIKE $pattern OR area LIKE $pattern OR city LIKE $pattern)";
-        var userId = Auth.CurrentUserId(context);
+            "name LIKE $pattern OR area LIKE $pattern OR city LIKE $pattern";
         var pattern = $"%{search}%";
 
         using var conn = Db.Open();
         long total;
         using (var count = conn.Cmd($"SELECT COUNT(*) FROM carwashes WHERE {where}",
-                   ("$userId", userId), ("$pattern", pattern)))
+                   ("$pattern", pattern)))
         {
             total = (long)count.ExecuteScalar()!;
         }
 
         var items = new List<CarWash>();
-        // ASC: каталог идёт в порядке добавления (в notes — DESC, новые сверху)
         using var cmd = conn.Cmd(
             $"SELECT {Columns} FROM carwashes WHERE {where} " +
             "ORDER BY id ASC LIMIT $limit OFFSET $offset",
-            ("$userId", userId), ("$pattern", pattern),
+            ("$pattern", pattern),
             ("$limit", limit), ("$offset", (page - 1) * limit));
         using var reader = cmd.ExecuteReader();
         while (reader.Read()) items.Add(Read(reader));
@@ -78,7 +70,6 @@ public static class CarWashes
         return Results.Json(new { items, page, limit, total });
     }
 
-    /// <summary>POST /carwashes {name, area, city, logoAsset?} -> 201 (id даёт сервер)</summary>
     public static IResult Create(HttpContext context, CarWashInput input)
     {
         var (clean, error) = Validate(input);
@@ -94,7 +85,7 @@ public static class CarWashes
         {
             insert.ExecuteNonQuery();
         }
-        var wash = Find(conn, userId, conn.LastInsertRowId())!;
+        var wash = Find(conn, conn.LastInsertRowId())!;
         return Results.Created($"/carwashes/{wash.Id}", wash);
     }
 
@@ -102,16 +93,16 @@ public static class CarWashes
     public static IResult GetOne(HttpContext context, long id)
     {
         using var conn = Db.Open();
-        var wash = Find(conn, Auth.CurrentUserId(context), id);
+        var wash = Find(conn, id);
         return wash is null ? Errors.NotFound("Car wash not found") : Results.Json(wash);
     }
 
-    /// <summary>PUT /carwashes/{id} -> 200 | 400 | 404</summary>
+    /// <summary>PUT /carwashes/{id} -> 200 | 400 | 403 | 404</summary>
     public static IResult Update(HttpContext context, long id, CarWashInput input)
     {
         var userId = Auth.CurrentUserId(context);
         using var conn = Db.Open();
-        if (Find(conn, userId, id) is null) return Errors.NotFound("Car wash not found");
+        if (CheckOwner(conn, userId, id) is { } denied) return denied;
 
         var (clean, error) = Validate(input);
         if (error is not null) return error;
@@ -124,17 +115,14 @@ public static class CarWashes
         {
             update.ExecuteNonQuery();
         }
-        return Results.Json(Find(conn, userId, id)!);
+        return Results.Json(Find(conn, id)!);
     }
 
-    /// <summary>DELETE /carwashes/{id} -> 204 (пустое тело) | 404</summary>
     public static IResult Delete(HttpContext context, long id)
     {
         using var conn = Db.Open();
-        if (Find(conn, Auth.CurrentUserId(context), id) is null)
-            return Errors.NotFound("Car wash not found");
+        if (CheckOwner(conn, Auth.CurrentUserId(context), id) is { } denied) return denied;
 
-        // сначала зависимая строка живой карты (REFERENCES carwashes)
         using (var live = conn.Cmd("DELETE FROM wash_live WHERE wash_id = $id", ("$id", id)))
         {
             live.ExecuteNonQuery();
