@@ -1,15 +1,9 @@
 #!/usr/bin/env bash
-# Сессии curl для L5: печатает команду, затем настоящий ответ сервера.
-#   bash tools/curl_session.sh notes   # Задание 1: контракт на notes
-#   bash tools/curl_session.sh theme   # Задание 2: сущность темы /carwashes
-# Повторный показ на той же базе — новый email, иначе register даст 409:
-#   EMAIL=ana2@test.md bash tools/curl_session.sh notes
 set -uo pipefail
 API=localhost:8080
-# системный curl.exe: корректно передаёт кириллицу (mingw-curl — нет)
 CURL=curl; [ -x /c/Windows/System32/curl.exe ] && CURL=/c/Windows/System32/curl.exe
 
-run() { # печатает команду и выполняет её
+run() {
   echo "\$ curl $*"
   "$CURL" -s -w '\n[HTTP %{http_code}]\n' "$@"
   echo
@@ -18,7 +12,7 @@ token_of() { sed -n 's/.*"token":"\([^"]*\)".*/\1/p'; }
 
 case "${1:-notes}" in
 notes)
-  run -i "$API/notes" | grep -E '^\$|^HTTP/|^\{|^\[HTTP' # 401 без пропуска
+  run -i "$API/notes" | grep -E '^\$|^HTTP/|^\{|^\[HTTP'
   EMAIL=${EMAIL:-ana@test.md}
   BODY="{\"email\":\"$EMAIL\",\"password\":\"parola123\",\"name\":\"Ana\"}"
   run -X POST "$API/auth/register" -H 'Content-Type: application/json' -d "$BODY"
