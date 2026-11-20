@@ -2,7 +2,6 @@ import 'car_wash.dart';
 import 'result.dart';
 
 abstract class CarWashRepository {
-  // L5: растёт совместимо — старый вызов fetchAll() компилируется как раньше.
   Future<Result<List<CarWash>>> fetchAll({
     int page = 1,
     int limit = 20,

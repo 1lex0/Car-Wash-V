@@ -8,7 +8,6 @@ import 'api_message.dart';
 import 'result.dart';
 import 'token_store.dart';
 
-// register/login по контракту; token уходит в TokenStore, пароль — никуда.
 class AuthApi {
   AuthApi(this.baseUrl, this.tokens);
 
@@ -28,7 +27,6 @@ class AuthApi {
 
   Future<void> logout() => tokens.clear();
 
-  // Один _post на оба маршрута: отличаются только путь и тело.
   Future<Result<void>> _post(String path, Map<String, Object?> body) async {
     try {
       final res = await http
@@ -37,21 +35,21 @@ class AuthApi {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(body),
           )
-          .timeout(_timeout); // слой 1: без timeout запрос может висеть вечно
+          .timeout(_timeout);
       if (res.statusCode != 200 && res.statusCode != 201) {
-        return Err(apiMessage(res)); // слой 2: 400 / 401 / 409 из конверта
+        return Err(apiMessage(res));
       }
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      await tokens.save(data['token'] as String); // C9: setString
+      await tokens.save(data['token'] as String);
       return const Ok(null);
     } on SocketException {
       return const Err('Нет сети — повторите попытку');
     } on TimeoutException {
       return const Err('Сервер не отвечает');
     } on FormatException {
-      return const Err('Ответ не тот, что обещан'); // слой 3: тело не JSON
+      return const Err('Ответ не тот, что обещан');
     } on TypeError {
-      return const Err('Ответ не тот, что обещан'); // слой 3: JSON не той формы
+      return const Err('Ответ не тот, что обещан');
     }
   }
 }

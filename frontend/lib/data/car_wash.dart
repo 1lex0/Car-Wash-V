@@ -13,16 +13,14 @@ class CarWash {
     this.logoAsset,
   });
 
-  // L5: граница JSON (C8). Ключи — как отдаёт сервер (camelCase).
   factory CarWash.fromJson(Map<String, dynamic> j) => CarWash(
     id: j['id'] as int,
     name: j['name'] as String,
     area: j['area'] as String? ?? '',
     city: j['city'] as String? ?? '',
-    logoAsset: j['logoAsset'] as String?, // null: у мойки нет логотипа
+    logoAsset: j['logoAsset'] as String?,
   );
 
-  // Без id — идентичность даёт сервер (C8).
   Map<String, dynamic> toJson() => {
     'name': name,
     'area': area,

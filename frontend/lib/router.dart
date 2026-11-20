@@ -15,11 +15,8 @@ import 'screens/welcome_screen.dart';
 
 import 'widgets/app_shell.dart';
 
-// L5: router строит main() — initialLocation зависит от token-а (C9),
-// поэтому здесь только объявление; иначе assignment_to_final.
 late final GoRouter router;
 
-// Экран «нет такого адреса» — из L3, без изменений.
 Widget routeErrorBuilder(BuildContext context, GoRouterState state) {
   return Scaffold(
     body: Center(
@@ -28,7 +25,6 @@ Widget routeErrorBuilder(BuildContext context, GoRouterState state) {
   );
 }
 
-// Маршруты L3 — без изменений, только вынесены в список для main().
 final List<RouteBase> appRoutes = [
   // --------------------------------------------------
   // AUTH / SCREENS WITHOUT BOTTOM NAVIGATION

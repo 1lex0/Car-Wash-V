@@ -15,7 +15,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  // L5: фильтр живёт в модели и уходит на сервер; здесь только контроллер.
   late final _searchController = TextEditingController(
     text: context.read<CarWashCatalogModel>().search,
   );
@@ -78,7 +77,6 @@ class _SearchScreenState extends State<SearchScreen> {
               TextField(
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
-                // поиск НА СЕРВЕРЕ: read — мы в callback-е
                 onSubmitted: (q) =>
                     context.read<CarWashCatalogModel>().load(search: q.trim()),
                 decoration: InputDecoration(
@@ -109,7 +107,6 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     return GridView.builder(
-      // +1 ячейка-хвост, пока сервер, видимо, отдаст ещё страницу
       itemCount: washes.length + (hasMore ? 1 : 0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -119,7 +116,6 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       itemBuilder: (context, index) {
         if (index == washes.length) {
-          // хвост виден → просим следующую страницу (guard — в модели)
           context.read<CarWashCatalogModel>().loadMore();
           return const Center(child: CircularProgressIndicator());
         }
