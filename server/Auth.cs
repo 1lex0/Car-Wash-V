@@ -11,6 +11,8 @@ namespace PamBackend;
 public record RegisterRequest(string? Email, string? Password, string? Name);
 public record LoginRequest(string? Email, string? Password);
 public record User(long Id, string Email, string Name);
+public record UpdateMeRequest(string? Email, string? Name);
+public record ChangePasswordRequest(string? CurrentPassword, string? NewPassword);
 
 public static class Auth
 {
@@ -87,6 +89,71 @@ public static class Auth
         if (!reader.Read()) return Errors.Unauthorized();
         return Results.Json(
             new User(reader.GetInt64(0), reader.GetString(1), reader.GetString(2)));
+    }
+
+    /// <summary>PUT /me {email?, name?} -> 200 {id, email, name} | 400 | 409</summary>
+    public static IResult UpdateMe(HttpContext context, UpdateMeRequest body)
+    {
+        var userId = CurrentUserId(context);
+        using var conn = Db.Open();
+        string email, name;
+        using (var cmd = conn.Cmd("SELECT email, name FROM users WHERE id = $id", ("$id", userId)))
+        using (var reader = cmd.ExecuteReader())
+        {
+            if (!reader.Read()) return Errors.Unauthorized();
+            email = reader.GetString(0);
+            name = reader.GetString(1);
+        }
+
+        if (body.Email is not null)
+        {
+            var newEmail = Errors.Trimmed(body.Email);
+            if (newEmail is null || !newEmail.Contains('@'))
+                return Errors.Validation("A valid email is required");
+            using var taken = conn.Cmd(
+                "SELECT id FROM users WHERE email = $email AND id <> $id",
+                ("$email", newEmail), ("$id", userId));
+            if (taken.ExecuteScalar() is not null) return Errors.EmailTaken();
+            email = newEmail;
+        }
+        if (body.Name is not null)
+        {
+            var newName = Errors.Trimmed(body.Name);
+            if (newName is null) return Errors.Validation("name is required");
+            name = newName;
+        }
+
+        using (var update = conn.Cmd(
+                   "UPDATE users SET email = $email, name = $name WHERE id = $id",
+                   ("$email", email), ("$name", name), ("$id", userId)))
+        {
+            update.ExecuteNonQuery();
+        }
+        return Results.Json(new User(userId, email, name));
+    }
+
+    /// <summary>PUT /me/password {currentPassword, newPassword} -> 204 | 400</summary>
+    public static IResult ChangePassword(HttpContext context, ChangePasswordRequest body)
+    {
+        var current = Errors.Trimmed(body.CurrentPassword);
+        var next = Errors.Trimmed(body.NewPassword);
+        if (current is null || next is null)
+            return Errors.Validation("currentPassword and newPassword are required");
+        if (next.Length < 6) return Errors.Validation("newPassword must be at least 6 characters");
+
+        var userId = CurrentUserId(context);
+        using var conn = Db.Open();
+        using (var cmd = conn.Cmd("SELECT password_hash FROM users WHERE id = $id", ("$id", userId)))
+        {
+            if (cmd.ExecuteScalar() is not string stored) return Errors.Unauthorized();
+            if (!VerifyPassword(current, stored))
+                return Errors.Error(400, "WRONG_PASSWORD", "Current password is incorrect");
+        }
+
+        using var update = conn.Cmd("UPDATE users SET password_hash = $hash WHERE id = $id",
+            ("$hash", HashPassword(next)), ("$id", userId));
+        update.ExecuteNonQuery();
+        return Results.NoContent();
     }
 
     // -----------------------------------------------------------------------

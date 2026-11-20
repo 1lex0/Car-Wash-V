@@ -31,6 +31,8 @@ app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 app.MapPost("/auth/register", Auth.Register);
 app.MapPost("/auth/login", Auth.Login);
 app.MapGet("/me", Auth.Me).AddEndpointFilter(Auth.RequireAuth);
+app.MapPut("/me", Auth.UpdateMe).AddEndpointFilter(Auth.RequireAuth);
+app.MapPut("/me/password", Auth.ChangePassword).AddEndpointFilter(Auth.RequireAuth);
 
 // Notes: the example entity. Register your own routes the same way.
 var notes = app.MapGroup("/notes").AddEndpointFilter(Auth.RequireAuth);
@@ -40,14 +42,12 @@ notes.MapGet("/{id:long}", Notes.GetOne);
 notes.MapPut("/{id:long}", Notes.Update);
 notes.MapDelete("/{id:long}", Notes.Delete);
 
-// 2D Wash: каталог моек — тот же auth-middleware, что и у /notes.
 var carwashes = app.MapGroup("/carwashes").AddEndpointFilter(Auth.RequireAuth);
 carwashes.MapGet("", CarWashes.List);
 carwashes.MapPost("", CarWashes.Create);
 carwashes.MapGet("/{id:long}", CarWashes.GetOne);
 carwashes.MapPut("/{id:long}", CarWashes.Update);
 carwashes.MapDelete("/{id:long}", CarWashes.Delete);
-// Живая карта мойки — вложенный ресурс, под тем же middleware.
 carwashes.MapGet("/{id:long}/live", LiveStates.Get);
 carwashes.MapPut("/{id:long}/live", LiveStates.Put);
 carwashes.MapDelete("/{id:long}/live", LiveStates.Delete);
